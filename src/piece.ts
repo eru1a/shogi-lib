@@ -195,19 +195,19 @@ export function pieceType(p: Piece): PieceType.PieceType {
       return "+P";
     case "+L":
     case "+l":
-      return "L";
+      return "+L";
     case "+N":
     case "+n":
-      return "L";
+      return "+N";
     case "+S":
     case "+s":
-      return "L";
+      return "+S";
     case "+B":
     case "+b":
-      return "L";
+      return "+B";
     case "+R":
     case "+r":
-      return "L";
+      return "+R";
   }
 }
 

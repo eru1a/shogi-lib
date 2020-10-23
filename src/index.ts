@@ -8,3 +8,4 @@ import * as Square from "./square";
 
 export { Color, File, Move, Piece, PieceType, Rank, Square };
 export * from "./position";
+export * from "./game";

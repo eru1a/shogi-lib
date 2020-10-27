@@ -77,17 +77,10 @@ export class Position {
 
   constructor(p?: { board?: Board; turn?: Color.Color; hand?: Hand; ply?: number }) {
     // pを渡さなかった場合は初期局面
-    if (!p) {
-      this.board = defaultBoard();
-      this.turn = "b";
-      this.hand = defaultHand();
-      this.ply = 0;
-      return;
-    }
-    this.board = p.board ?? emptyBoard();
-    this.turn = p.turn ?? "b";
-    this.hand = p.hand ?? defaultHand();
-    this.ply = p.ply ?? 0;
+    this.board = p?.board ?? defaultBoard();
+    this.turn = p?.turn ?? "b";
+    this.hand = p?.hand ?? defaultHand();
+    this.ply = p?.ply ?? 0;
   }
 
   clone(): Position {
@@ -285,7 +278,6 @@ export class Position {
   }
 
   move(m: Move.Move): void | Error {
-    debugger;
     if (!this.isLegalMove(m)) {
       return new Error(`move: illegal move: ${Move.toUSI(m)} ${this}`);
     }
@@ -293,6 +285,11 @@ export class Position {
     if (err instanceof Error) {
       return new Error(`move: unsafeMove has error: ${err}`);
     }
+  }
+
+  pass(): void {
+    this.turn = Color.inv(this.turn);
+    this.ply++;
   }
 
   legalMoves(): Array<Move.Move> {

@@ -18,12 +18,12 @@ export const squares = [
 // type square = { file: File, rank: Rank } とかのほうがいいかな
 export type Square = typeof squares[number];
 
-export function toNum(square: Square): number {
+export function toIndex(square: Square): number {
   return squares.indexOf(square);
 }
 
-export function fromNum(i: number): Square | Error {
-  return squares[i] ?? new Error("squareFromNum: i should be 0<=i<=80 ${i}");
+export function fromIndex(i: number): Square | Error {
+  return squares[i] ?? new Error("Square.fromNUM: i should be 0<=i<=80 ${i}");
 }
 
 /** 将棋盤上で左上(9a)を(0, 0)、右下(1i)を(8, 8)とした時のsquareの指す座標を返す。 */
@@ -34,7 +34,7 @@ export function toXY(square: Square): { x: number; y: number } {
 
 export function fromXY(x: number, y: number): Square | Error {
   if (File.fromX(x) instanceof Error || Rank.fromY(y) instanceof Error) {
-    return new Error(`squareFromXY: invalid xy: (${x}, ${y})`);
+    return new Error(`Square.fromXY: invalid xy: (${x}, ${y})`);
   }
   return squares[x + y * 9];
 }
@@ -59,7 +59,43 @@ export function fromUSI(usi: string): Square | Error {
   const file = File.fromUSI(usi[0]);
   const rank = Rank.fromUSI(usi[1]);
   if (usi.length !== 2 || file instanceof Error || rank instanceof Error) {
-    return new Error(`squareFromUSI: invalid usi: ${usi}`);
+    return new Error(`Square.fromUSI: invalid usi: ${usi}`);
+  }
+  return fromFileRank(file, rank);
+}
+
+export function toKIF(square: Square, lastTo?: Square): string {
+  if (lastTo === square) {
+    return "同";
+  }
+  const { file, rank } = toFileRank(square);
+  return `${File.toKIF(file)}${Rank.toKIF(rank)}`;
+}
+
+export function fromKIF(kif: string, lastTo?: Square): Square | Error {
+  if (kif === "同") {
+    if (lastTo === undefined) return new Error(`Square.fromKIF: lastTo should not be undefined`);
+    return lastTo;
+  }
+
+  const file = File.fromKIF(kif[0]);
+  const rank = Rank.fromKIF(kif[1]);
+  if (kif.length !== 2 || file instanceof Error || rank instanceof Error) {
+    return new Error(`Square.fromKIF: invalid usi: ${kif}`);
+  }
+  return fromFileRank(file, rank);
+}
+
+export function toSuuji(square: Square): string {
+  const { file, rank } = toFileRank(square);
+  return `${File.toSuuji(file)}${Rank.toSuuji(rank)}`;
+}
+
+export function fromSuuji(suuji: string): Square | Error {
+  const file = File.fromSuuji(suuji[0]);
+  const rank = Rank.fromSuuji(suuji[1]);
+  if (suuji.length !== 2 || file instanceof Error || rank instanceof Error) {
+    return new Error(`Square.fromSuuji: invalid usi: ${suuji}`);
   }
   return fromFileRank(file, rank);
 }
@@ -68,7 +104,7 @@ export function add(square: Square, dx: number, dy: number): Square | Error {
   const { x, y } = toXY(square);
   const sq = fromXY(x + dx, y + dy);
   if (sq instanceof Error) {
-    return new Error(`squareAdd: out of bounds: add (${x}, ${y}) to ${square}`);
+    return new Error(`Square.add: out of bounds: add (${x}, ${y}) to ${square}`);
   }
   return sq;
 }

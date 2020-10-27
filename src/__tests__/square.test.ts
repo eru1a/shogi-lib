@@ -2,7 +2,7 @@ import * as File from "../file";
 import * as Rank from "../rank";
 import * as Square from "../square";
 
-describe("toNum", () => {
+describe("toIndex", () => {
   const tests: Array<{ square: Square.Square; want: number }> = [
     { square: "9a", want: 0 },
     { square: "7g", want: 56 },
@@ -10,25 +10,25 @@ describe("toNum", () => {
   ];
   tests.forEach(({ square, want }) => {
     test(`{square}`, () => {
-      expect(Square.toNum(square)).toBe(want);
+      expect(Square.toIndex(square)).toBe(want);
     });
   });
 });
 
-describe("fromNum", () => {
+describe("fromIndex", () => {
   const testsOK: Array<{ num: number; want: Square.Square }> = [
     { num: 0, want: "9a" },
     { num: 56, want: "7g" },
     { num: 80, want: "1i" },
   ];
   testsOK.forEach(({ num, want }) => {
-    expect(Square.fromNum(num)).toBe(want);
+    expect(Square.fromIndex(num)).toBe(want);
   });
 
   const testsNG = [-1, 81, 100];
   testsNG.forEach((num) => {
     test(`${num}`, () => {
-      if (!(Square.fromNum(num) instanceof Error)) {
+      if (!(Square.fromIndex(num) instanceof Error)) {
         throw new Error(`should be error ${num}`);
       }
     });
@@ -138,6 +138,75 @@ describe("toUSI", () => {
   tests.forEach(({ square, want }) => {
     test(`{square}`, () => {
       expect(Square.toUSI(square)).toBe(want);
+    });
+  });
+});
+
+describe("fromKIF", () => {
+  const testsOK: Array<{ kif: string; lastTo?: Square.Square; want: Square.Square }> = [
+    { kif: "９一", want: "9a" },
+    { kif: "７七", want: "7g" },
+    { kif: "１九", want: "1i" },
+    { kif: "１九", want: "1i" },
+    { kif: "同", lastTo: "5e", want: "5e" },
+  ];
+  testsOK.forEach(({ kif: kif, lastTo, want }) => {
+    expect(Square.fromKIF(kif, lastTo)).toBe(want);
+  });
+
+  const testsNG = ["", "１", "一", "一１", "12", "０一", "１十", "同"];
+  testsNG.forEach((kif) => {
+    test(kif, () => {
+      if (!(Square.fromKIF(kif) instanceof Error)) {
+        throw new Error(`should be error ${kif}`);
+      }
+    });
+  });
+});
+
+describe("toKIF", () => {
+  const tests: Array<{ square: Square.Square; lastTo?: Square.Square; want: string }> = [
+    { square: "9a", want: "９一" },
+    { square: "7g", want: "７七" },
+    { square: "1i", want: "１九" },
+    { square: "5e", lastTo: "5e", want: "同" },
+  ];
+  tests.forEach(({ square, lastTo, want }) => {
+    test(`{square}`, () => {
+      expect(Square.toKIF(square, lastTo)).toBe(want);
+    });
+  });
+});
+
+describe("fromSuuji", () => {
+  const testsOK: Array<{ suuji: string; want: Square.Square }> = [
+    { suuji: "91", want: "9a" },
+    { suuji: "77", want: "7g" },
+    { suuji: "19", want: "1i" },
+  ];
+  testsOK.forEach(({ suuji, want }) => {
+    expect(Square.fromSuuji(suuji)).toBe(want);
+  });
+
+  const testsNG = ["", "1", "01", "123", "1a", "９一"];
+  testsNG.forEach((suuji) => {
+    test(suuji, () => {
+      if (!(Square.fromSuuji(suuji) instanceof Error)) {
+        throw new Error(`should be error ${suuji}`);
+      }
+    });
+  });
+});
+
+describe("toSuuji", () => {
+  const tests: Array<{ square: Square.Square; want: string }> = [
+    { square: "9a", want: "91" },
+    { square: "7g", want: "77" },
+    { square: "1i", want: "19" },
+  ];
+  tests.forEach(({ square, want }) => {
+    test(`{square}`, () => {
+      expect(Square.toSuuji(square)).toBe(want);
     });
   });
 });

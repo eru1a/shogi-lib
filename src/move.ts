@@ -10,6 +10,7 @@ export type NormalMove = {
 
 export type DropMove = { type: "drop"; to: Square.Square; pieceType: PieceType.PieceType };
 
+/** 指し手を表す型。USI形式の指し手を表現するのに必要な最低限のデータしか持たない。 */
 export type Move = NormalMove | DropMove;
 
 export function toUSI(move: Move): string {
@@ -46,7 +47,7 @@ export function fromUSI(usi: string): Move | Error {
   const from = Square.fromUSI(usi.substring(0, 2));
   const to = Square.fromUSI(usi.substring(2, 4));
   if (from instanceof Error || to instanceof Error) {
-    return new Error(`moveFromUSI: invalid normal move: ${usi}`);
+    return new Error(`Move.fromUSI: invalid normal move: ${usi}`);
   }
   if (usi.length === 4) {
     return { type: "normal", from, to, promotion: false };
@@ -54,7 +55,7 @@ export function fromUSI(usi: string): Move | Error {
   if (usi.length === 5 && usi[4] === "+") {
     return { type: "normal", from, to, promotion: true };
   }
-  return new Error(`moveFromUSI: 5th char should be '+': ${usi}`);
+  return new Error(`Move.fromUSI: 5th char should be '+': ${usi}`);
 }
 
 export function equal(m1: Move, m2: Move): boolean {

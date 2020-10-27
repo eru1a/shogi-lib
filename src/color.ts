@@ -25,6 +25,6 @@ export function fromUSI(usi: string): Color | Error {
     case "w":
       return "w";
     default:
-      return new Error(`colorFromUSI: invalid usi: "${usi}"`);
+      return new Error(`Color.fromUSI: invalid usi: "${usi}"`);
   }
 }

@@ -121,7 +121,7 @@ export function fromUSI(usi: string): Piece | Error {
     case "+b": return "+b";
     case "+R": return "+R";
     case "+r": return "+r";
-    default: return new Error(`pieceFromUSI: invalid usi: "${usi}"`);
+    default: return new Error(`Piece.fromUSI: invalid usi: "${usi}"`);
   }
 }
 
@@ -165,49 +165,22 @@ export function colorInv(p: Piece): Piece {
 }
 
 export function pieceType(p: Piece): PieceType.PieceType {
+  // prettier-ignore
   switch (p) {
-    case "P":
-    case "p":
-      return "P";
-    case "L":
-    case "l":
-      return "L";
-    case "N":
-    case "n":
-      return "N";
-    case "S":
-    case "s":
-      return "S";
-    case "G":
-    case "g":
-      return "G";
-    case "B":
-    case "b":
-      return "B";
-    case "R":
-    case "r":
-      return "R";
-    case "K":
-    case "k":
-      return "K";
-    case "+P":
-    case "+p":
-      return "+P";
-    case "+L":
-    case "+l":
-      return "+L";
-    case "+N":
-    case "+n":
-      return "+N";
-    case "+S":
-    case "+s":
-      return "+S";
-    case "+B":
-    case "+b":
-      return "+B";
-    case "+R":
-    case "+r":
-      return "+R";
+    case "P": case "p": return "P";
+    case "L": case "l": return "L";
+    case "N": case "n": return "N";
+    case "S": case "s": return "S";
+    case "G": case "g": return "G";
+    case "B": case "b": return "B";
+    case "R": case "r": return "R";
+    case "K": case "k": return "K";
+    case "+P": case "+p": return "+P";
+    case "+L": case "+l": return "+L";
+    case "+N": case "+n": return "+N";
+    case "+S": case "+s": return "+S";
+    case "+B": case "+b": return "+B";
+    case "+R": case "+r": return "+R";
   }
 }
 
@@ -269,4 +242,5 @@ export function needForcePromotion(p: Piece, s: Square.Square): boolean {
 }
 
 // prettier-ignore
-export const handPieces: Array<Piece> = ["R", "B", "G", "S", "N", "L", "P", "r", "b", "g", "s", "n", "l", "p",];
+export const handPieces: Array<Piece> =
+  ["R", "B", "G", "S", "N", "L", "P", "r", "b", "g", "s", "n", "l", "p",];

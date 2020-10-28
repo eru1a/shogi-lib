@@ -85,13 +85,15 @@ export class Position {
   }
 
   clone(): Position {
-    // position -> sfen -> position
-    const p = Position.fromSFEN(this.toSFEN());
-    if (p instanceof Error) {
-      // Position.fromSFENにバグがある
-      throw new Error("clone: Position.fromSFEN has bug ${this}");
+    const board = emptyBoard();
+    const hand = defaultHand();
+    for (let y = 0; y < 9; y++) {
+      for (let x = 0; x < 9; x++) {
+        board[y][x] = this.board[y][x];
+      }
     }
-    return p;
+    this.hand.forEach((num, piece) => hand.set(piece, num));
+    return new Position({ board, hand, turn: this.turn, ply: this.ply });
   }
 
   static fromSFEN(sfen: string): Position | Error {

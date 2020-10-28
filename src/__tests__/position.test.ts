@@ -293,11 +293,37 @@ describe("peft", () => {
       depth: 1,
       want: 30,
     },
-    // {
-    //   sfen: "lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b - 1",
-    //   depth: 2,
-    //   want: 900,
-    // },
+    {
+      sfen: "lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b - 1",
+      depth: 2,
+      want: 900,
+    },
+    {
+      // 最大の合法手が存在する局面
+      sfen: "R8/2K1S1SSk/4B4/9/9/9/9/9/1L1L1L3 b RBGSNLP3g3n17p 1",
+      depth: 1,
+      want: 593,
+    },
+    {
+      sfen: "4k4/9/9/9/9/9/9/9/9 b 16P 1",
+      depth: 1,
+      want: 72,
+    },
+    {
+      sfen: "4k4/9/9/9/9/9/9/9/9 b 16P 1",
+      depth: 2,
+      want: 355,
+    },
+    {
+      sfen: "r7k/6K2/7SP/4s2bb/9/9/9/9/9 b r4g2s4n4l17p 1",
+      depth: 1,
+      want: 4,
+    },
+    {
+      sfen: "l7l/5bS2/p1np5/6Sk1/4p2B1/PSpPPn1G1/1P1G2g1N/2+l6/L1KN1+r3 b R3Pgs7p 1",
+      depth: 1,
+      want: 1,
+    },
   ];
 
   tests.forEach(({ sfen, depth, want }) => {

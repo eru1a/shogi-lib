@@ -1,4 +1,5 @@
 import * as Piece from "./piece";
+import * as PieceType from "./pieceType";
 import * as Color from "./color";
 import * as Square from "./square";
 import * as Move from "./move";
@@ -292,46 +293,57 @@ export class Position {
     this.ply++;
   }
 
+  /** 引数の疑似合法手が合法手かどうか調べる。 */
+  private pseudoLegalMoveIsLegal(move: Move.Move): boolean {
+    const clone = this.clone();
+    const err = clone.unsafeMove(move);
+    if (err instanceof Error) {
+      // 疑似合法手でunsafeMoveが失敗することは起こりえないはず
+      console.error(`legalMoves: pseudoLegalMoves has bug: ${Move.toUSI(move)}: ${err}`);
+      return false;
+    }
+    // 王手放置
+    if (clone.isInCheck(this.turn)) {
+      return false;
+    }
+    // 打ち歩詰め
+    if (
+      move.type === "drop" &&
+      move.pieceType === "P" &&
+      clone.isInCheck() &&
+      clone.isCheckmate()
+    ) {
+      return false;
+    }
+    return true;
+  }
+
   legalMoves(): Array<Move.Move> {
-    return this.pseudoLegalMoves().filter((move) => {
-      // 王手放置
-      const clone = this.clone();
-      const err = clone.unsafeMove(move);
-      if (err instanceof Error) {
-        throw new Error(`legalMoves: pseudoLegalMoves has bug: ${Move.toUSI(move)}: ${err}`);
-      }
-      if (clone.isInCheck(this.turn)) {
-        return false;
-      }
-      // 打ち歩詰め
-      if (
-        move.type === "drop" &&
-        move.pieceType === "P" &&
-        clone.isInCheck() &&
-        clone.isCheckmate()
-      ) {
-        return false;
-      }
-      return true;
-    });
+    return this.pseudoLegalMoves().filter((move) => this.pseudoLegalMoveIsLegal(move));
   }
 
   isLegalMove(m: Move.Move): boolean {
-    return this.legalMoves().some((move) => Move.equal(move, m));
+    if (m.type === "normal") {
+      return this.generateNormalMovesFromSquare(this.turn, m.from)
+        .filter((move) => this.pseudoLegalMoveIsLegal(move))
+        .some((move) => Move.equal(move, m));
+    }
+    return this.generateDropMoves(this.turn, m.pieceType)
+      .filter((move) => this.pseudoLegalMoveIsLegal(move))
+      .some((move) => Move.equal(move, m));
   }
 
   isCheckmate(): boolean {
     return this.legalMoves().length === 0;
   }
 
-  // 時間がかかりすぎてダメ
-  // 合法手の生成等を高速化しなければ...
   perft(depth: number): number {
     if (depth === 0) return 0;
-    const clone = this.clone();
-    const legalMoves = clone.legalMoves();
-    let num = legalMoves.length;
+    if (depth === 1) return this.legalMoves().length;
+    const legalMoves = this.legalMoves();
+    let num = 0;
     legalMoves.forEach((move) => {
+      const clone = this.clone();
       clone.move(move);
       num += clone.perft(depth - 1);
     });
@@ -397,93 +409,81 @@ export class Position {
     return moves;
   }
 
+  /** squareをfromとするcolor側の疑似合法手を生成する */
+  generateNormalMovesFromSquare(color: Color.Color, square: Square.Square): Array<Move.Move> {
+    const piece = this.getPiece(square);
+    if (piece === undefined) return [];
+    if (Piece.color(piece) !== color) return [];
+
+    switch (piece) {
+      case "P":
+        return this.generateHoppingMoves(color, square, piece, getEffect("P"));
+      case "L":
+        return this.generateSlidingMoves(color, square, piece, getEffect("L"));
+      case "N":
+        return this.generateHoppingMoves(color, square, piece, getEffect("N"));
+      case "S":
+        return this.generateHoppingMoves(color, square, piece, getEffect("S"));
+      case "G":
+      case "+P":
+      case "+L":
+      case "+N":
+      case "+S":
+        return this.generateHoppingMoves(color, square, piece, getEffect("G"));
+      case "B":
+        return this.generateSlidingMoves(color, square, piece, getEffect("B"));
+      case "+B":
+        return this.generateSlidingMoves(color, square, piece, getEffect("B")).concat(
+          this.generateHoppingMoves(color, square, piece, getEffect("R"))
+        );
+      case "R":
+        return this.generateSlidingMoves(color, square, piece, getEffect("R"));
+      case "+R":
+        return this.generateSlidingMoves(color, square, piece, getEffect("R")).concat(
+          this.generateHoppingMoves(color, square, piece, getEffect("B"))
+        );
+      case "K":
+        return this.generateHoppingMoves(color, square, piece, getEffect("K"));
+      case "p":
+        return this.generateHoppingMoves(color, square, piece, getEffect("p"));
+      case "l":
+        return this.generateSlidingMoves(color, square, piece, getEffect("l"));
+      case "n":
+        return this.generateHoppingMoves(color, square, piece, getEffect("n"));
+      case "s":
+        return this.generateHoppingMoves(color, square, piece, getEffect("s"));
+      case "g":
+      case "+p":
+      case "+l":
+      case "+n":
+      case "+s":
+        return this.generateHoppingMoves(color, square, piece, getEffect("g"));
+      case "b":
+        return this.generateSlidingMoves(color, square, piece, getEffect("b"));
+      case "+b":
+        return this.generateSlidingMoves(color, square, piece, getEffect("b")).concat(
+          this.generateHoppingMoves(color, square, piece, getEffect("r"))
+        );
+      case "r":
+        return this.generateSlidingMoves(color, square, piece, getEffect("r"));
+      case "+r":
+        return this.generateSlidingMoves(color, square, piece, getEffect("r")).concat(
+          this.generateHoppingMoves(color, square, piece, getEffect("b"))
+        );
+      case "k":
+        return this.generateHoppingMoves(color, square, piece, getEffect("k"));
+    }
+  }
+
   private generateNormalMoves(color: Color.Color): Array<Move.Move> {
-    const getEffect = (piece: Piece.Piece) => pieceEffects.get(piece) ?? [];
     let moves: Array<Move.Move> = [];
     for (const square of Square.squares) {
-      const piece = this.getPiece(square);
-      if (piece === undefined) continue;
-      if (Piece.color(piece) !== color) continue;
-
-      switch (piece) {
-        case "P":
-          moves = moves.concat(this.generateHoppingMoves(color, square, piece, getEffect("P")));
-          break;
-        case "L":
-          moves = moves.concat(this.generateSlidingMoves(color, square, piece, getEffect("L")));
-          break;
-        case "N":
-          moves = moves.concat(this.generateHoppingMoves(color, square, piece, getEffect("N")));
-          break;
-        case "S":
-          moves = moves.concat(this.generateHoppingMoves(color, square, piece, getEffect("S")));
-          break;
-        case "G":
-        case "+P":
-        case "+L":
-        case "+N":
-        case "+S":
-          moves = moves.concat(this.generateHoppingMoves(color, square, piece, getEffect("G")));
-          break;
-        case "B":
-          moves = moves.concat(this.generateSlidingMoves(color, square, piece, getEffect("B")));
-          break;
-        case "+B":
-          moves = moves.concat(this.generateSlidingMoves(color, square, piece, getEffect("B")));
-          moves = moves.concat(this.generateHoppingMoves(color, square, piece, getEffect("R")));
-          break;
-        case "R":
-          moves = moves.concat(this.generateSlidingMoves(color, square, piece, getEffect("R")));
-          break;
-        case "+R":
-          moves = moves.concat(this.generateSlidingMoves(color, square, piece, getEffect("R")));
-          moves = moves.concat(this.generateHoppingMoves(color, square, piece, getEffect("B")));
-          break;
-        case "K":
-          moves = moves.concat(this.generateHoppingMoves(color, square, piece, getEffect("K")));
-          break;
-        case "p":
-          moves = moves.concat(this.generateHoppingMoves(color, square, piece, getEffect("p")));
-          break;
-        case "l":
-          moves = moves.concat(this.generateSlidingMoves(color, square, piece, getEffect("l")));
-          break;
-        case "n":
-          moves = moves.concat(this.generateHoppingMoves(color, square, piece, getEffect("n")));
-          break;
-        case "s":
-          moves = moves.concat(this.generateHoppingMoves(color, square, piece, getEffect("s")));
-          break;
-        case "g":
-        case "+p":
-        case "+l":
-        case "+n":
-        case "+s":
-          moves = moves.concat(this.generateHoppingMoves(color, square, piece, getEffect("g")));
-          break;
-        case "b":
-          moves = moves.concat(this.generateSlidingMoves(color, square, piece, getEffect("b")));
-          break;
-        case "+b":
-          moves = moves.concat(this.generateSlidingMoves(color, square, piece, getEffect("b")));
-          moves = moves.concat(this.generateHoppingMoves(color, square, piece, getEffect("r")));
-          break;
-        case "r":
-          moves = moves.concat(this.generateSlidingMoves(color, square, piece, getEffect("r")));
-          break;
-        case "+r":
-          moves = moves.concat(this.generateSlidingMoves(color, square, piece, getEffect("r")));
-          moves = moves.concat(this.generateHoppingMoves(color, square, piece, getEffect("b")));
-          break;
-        case "k":
-          moves = moves.concat(this.generateHoppingMoves(color, square, piece, getEffect("k")));
-          break;
-      }
+      moves = moves.concat(this.generateNormalMovesFromSquare(color, square));
     }
     return moves;
   }
 
-  private generateDropMoves(color: Color.Color): Array<Move.Move> {
+  private generateDropMoves(color: Color.Color, pt?: PieceType.PieceType): Array<Move.Move> {
     const fuInRow = (p: Piece.Piece, file: File.File): boolean => {
       for (const rank of Rank.ranks) {
         if (this.getPiece(Square.fromFileRank(file, rank)) === p) return true;
@@ -493,6 +493,7 @@ export class Position {
     const moves: Array<Move.Move> = [];
     Piece.handPieces
       .filter((piece) => Piece.color(piece) === color)
+      .filter((piece) => pt === undefined || Piece.pieceType(piece) === pt)
       .filter((piece) => (this.getHand(piece) ?? 0) >= 1)
       .forEach((piece) => {
         for (const rank of Rank.ranks) {
@@ -644,3 +645,5 @@ const pieceEffects: Map<Piece.Piece, PieceEffect> = new Map([
   [ "r",  [[-1, 0], [0, 1], [1, 0], [0, -1]] ],
   [ "k",  [[-1, 0], [-1, 1], [0, 1], [1, 1], [1, 0], [1, -1], [0, -1], [-1, -1]] ],
 ]);
+
+const getEffect = (piece: Piece.Piece) => pieceEffects.get(piece) ?? [];

@@ -14,13 +14,20 @@
     "build:esm": "tsc --project . --module es2015 --outDir ./dist-esm",
     "test": "jest",
     "lint": "eslint .",
-    "fix": "eslint --fix ."
+    "fix": "eslint --fix .",
+    "bench": "npm run bench:perft && npm run bench:kif",
+    "bench:perft": "ts-node benches/perft.ts",
+    "bench:kif": "ts-node benches/kif.ts"
   },
-  "keywords": ["shogi"],
+  "keywords": [
+    "shogi"
+  ],
   "devDependencies": {
+    "@types/benchmark": "^1.0.33",
     "@types/jest": "^26.0.14",
     "@typescript-eslint/eslint-plugin": "^4.3.0",
     "@typescript-eslint/parser": "^4.3.0",
+    "benchmark": "^2.1.4",
     "eslint": "^7.10.0",
     "eslint-config-prettier": "^6.12.0",
     "eslint-plugin-prettier": "^3.1.4",
@@ -28,6 +35,7 @@
     "npm-run-all": "^4.1.5",
     "prettier": "^2.1.2",
     "ts-jest": "^26.4.0",
+    "ts-node": "^9.0.0",
     "typescript": "^4.0.3"
   }
 }

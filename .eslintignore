@@ -1,3 +1,4 @@
 node_modules
+benches
 dist-cjs
 dist-esm

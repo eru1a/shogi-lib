@@ -4,7 +4,7 @@ import * as Move from "./move";
 import * as MoveData from "./moveData";
 import * as Square from "./square";
 
-// TODO: BOD
+// TODO: BOD, 分岐
 export function parseKIF(kif: string): Game | Error {
   const headerRe = /(.*)：(.*)/;
   const moveRe = /(\d+)\s*([１２３４５６７８９][一二三四五六七八九]|同)\s*(成?[歩香桂銀金角飛王玉と杏圭全馬竜龍])([成|打]?)\s*\(?(\d\d)?\)?/;
@@ -50,7 +50,7 @@ export function parseKIF(kif: string): Game | Error {
           return new Error(`parseKIF: ${line}: ${from}`);
         }
 
-        const lastMove = MoveData.move(game.currentNode.lastMove);
+        const lastMove = MoveData.getMove(game.currentNode.lastMove);
         const lastTo = lastMove?.to;
         const to = toKIF === "同" ? Square.fromKIF(toKIF, lastTo) : Square.fromKIF(toKIF);
         if (to instanceof Error) {
@@ -82,7 +82,7 @@ export function parseKIF(kif: string): Game | Error {
         turn,
         ply,
       };
-      const err = game.moveData(move);
+      const err = game.move(move);
       if (err instanceof Error) {
         return new Error(`parseKIF: ${line}: ${err}`);
       }

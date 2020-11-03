@@ -38,7 +38,7 @@ export function fromMove(
         `MoveData.fromMove: no piece on from square: ${position.toSFEN()} ${Move.toUSI(move)}`
       );
     }
-    const same = lastMove?.to === move.to ?? false;
+    const same = lastMove?.to === move.to;
     return {
       type: "md_normal",
       move,
@@ -57,7 +57,7 @@ export function fromMove(
   };
 }
 
-export function move(moveData: MoveData): Move.Move | undefined {
+export function getMove(moveData: MoveData): Move.Move | undefined {
   switch (moveData.type) {
     case "md_normal":
     case "md_drop":
@@ -65,6 +65,32 @@ export function move(moveData: MoveData): Move.Move | undefined {
     default:
       return undefined;
   }
+}
+
+export function equal(move1: MoveData, move2: MoveData): boolean {
+  // lodashのisEqualとか使ったほうがいいかも
+  if (move1.type === "md_normal" && move2.type === "md_normal") {
+    return (
+      Move.equal(move1.move, move2.move) &&
+      move1.turn === move2.turn &&
+      move1.ply === move2.ply &&
+      move1.piece === move2.piece &&
+      move1?.captured === move2?.captured &&
+      move1.same === move2.same
+    );
+  }
+  if (move1.type === "md_drop" && move2.type === "md_drop") {
+    return (
+      Move.equal(move1.move, move2.move) && move1.turn === move2.turn && move1.ply === move2.ply
+    );
+  }
+  if (move1.type === "md_chudan" && move2.type === "md_chudan") {
+    return move1.turn === move2.turn && move1.ply === move2.ply;
+  }
+  if (move1.type === "md_toryo" && move2.type === "md_toryo") {
+    return move1.turn === move2.turn && move1.ply === move2.ply;
+  }
+  return false;
 }
 
 export function toKIF(

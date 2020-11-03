@@ -22,7 +22,7 @@ describe("parseKIF", () => {
     const game = parseKIF(kif);
     if (game instanceof Error) throw game;
 
-    game.goToFirst();
+    game.gotoFirst();
     [
       "開始局面",
       "1▲７六歩(77)",
@@ -44,9 +44,9 @@ describe("parseKIF", () => {
     const kif = fs.readFileSync("./src/__tests__/data/test2.kifu", { encoding: "utf8" });
     const game = parseKIF(kif);
     if (game instanceof Error) throw game;
-    game.goToLast();
+    game.gotoLast();
     expect(game.currentNode.position.toSFEN()).toBe(
-      "lrg3k1l/3Sl4/p1pppp+B2/1P1s2ppp/P8/+Rp1n2P2/4PP2P/6G2/L4K3 b 2Gb2s3n3p 115"
+      "lrg3k1l/3Sl4/p1pppp+B2/1P1s2ppp/P8/+Rp1n2P2/4PP2P/6G2/L4K3 w 2Gb2s3n3p 114"
     );
   });
 });
